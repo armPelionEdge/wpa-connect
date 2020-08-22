@@ -101,7 +101,7 @@ func (self *connectManager) connectToBSS(bss *wpa_dbus.BSSWPA, iface *wpa_dbus.I
 	addNetworkArgs := map[string]dbus.Variant{
 		"ssid": dbus.MakeVariant(bss.SSID),
 		"psk":  dbus.MakeVariant(password)}
-	if iface.RemoveAllNetworks().AddNetwork(addNetworkArgs); iface.Error == nil {
+	if iface.AddNetwork(addNetworkArgs); iface.Error == nil {
 		network := iface.NewNetwork
 		self.context.phaseWaitForInterfaceConnected = true
 		go func() {
