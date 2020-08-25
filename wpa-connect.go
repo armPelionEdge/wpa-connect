@@ -1,3 +1,23 @@
+/*
+ Copyright (c) 2020 ARM Limited and affiliates.
+ Copyright (c) 2016 Mark Berner
+ SPDX-License-Identifier: MIT
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to
+ deal in the Software without restriction, including without limitation the
+ rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ sell copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+*/
 package wpaconnect
 
 import (
@@ -81,11 +101,27 @@ func (self *connectManager) Connect(ssid string, password string, timeout time.D
 	return
 }
 
+func (self *connectManager) Disconnect() (e error) {
+	if wpa, err := wpa_dbus.NewWPA(); err == nil {
+		if wpa.ReadInterface(self.NetInterface); wpa.Error == nil {
+			iface := wpa.Interface
+			if iface.RemoveAllNetworks(); iface.Error == nil {
+				e = nil
+			}
+		} else {
+			e = wpa.Error
+		}
+	} else {
+		e = err
+	}
+	return
+}
+
 func (self *connectManager) connectToBSS(bss *wpa_dbus.BSSWPA, iface *wpa_dbus.InterfaceWPA, password string) (e error) {
 	addNetworkArgs := map[string]dbus.Variant{
 		"ssid": dbus.MakeVariant(bss.SSID),
 		"psk":  dbus.MakeVariant(password)}
-	if iface.RemoveAllNetworks().AddNetwork(addNetworkArgs); iface.Error == nil {
+	if iface.AddNetwork(addNetworkArgs); iface.Error == nil {
 		network := iface.NewNetwork
 		self.context.phaseWaitForInterfaceConnected = true
 		go func() {
