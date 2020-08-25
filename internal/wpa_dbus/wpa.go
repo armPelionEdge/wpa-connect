@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/godbus/dbus"
-	"github.com/mark2b/wpa-connect/internal/log"
+	"github.com/armPelionEdge/wpa-connect/internal/log"
 )
 
 type WPA struct {
